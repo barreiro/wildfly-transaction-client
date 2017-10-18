@@ -257,18 +257,8 @@ public final class LocalTransactionContext implements Contextual<LocalTransactio
 
     LocalTransaction getOrAttach(Transaction transaction, CreationListener.CreatedBy createdBy) {
         LocalTransaction txn = (LocalTransaction) provider.getResource(transaction, LOCAL_TXN_KEY);
-        boolean isNew = false;
         if (txn == null) {
-            // use LOCAL_TXN_KEY so we can be reasonably assured that there will be no deadlock
-            synchronized (LOCAL_TXN_KEY) {
-                txn = (LocalTransaction) provider.getResource(transaction, LOCAL_TXN_KEY);
-                if (txn == null) {
-                    provider.putResource(transaction, LOCAL_TXN_KEY, txn = new LocalTransaction(this, transaction));
-                    isNew = true;
-                }
-            }
-        }
-        if (isNew) {
+            provider.putResource(transaction, LOCAL_TXN_KEY, txn = new LocalTransaction(this, transaction) );
             notifyCreationListeners(txn, createdBy);
         }
         return txn;

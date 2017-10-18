@@ -186,18 +186,12 @@ public abstract class JBossLocalTransactionProvider implements LocalTransactionP
         if (entry != null) {
             return entry;
         }
-        final XidKey xidKey;
-        synchronized (ENTRY_KEY) {
-            entry = (Entry) getResource(transaction, ENTRY_KEY);
-            if (entry != null) {
-                return entry;
-            }
-            int lifetime = getTimeout(transaction) + staleTransactionTime;
-            final long timeTick = getTimeTick();
-            // this is the maximum amount of time we expect any potential incoming peer might know about this transaction ID
-            xidKey = new XidKey(gtid, timeTick + lifetime * 1_000_000_000L);
-            putResource(transaction, ENTRY_KEY, entry = new Entry(gtid, transaction, xidKey));
-        }
+        int lifetime = getTimeout(transaction) + staleTransactionTime;
+        final long timeTick = getTimeTick();
+        // this is the maximum amount of time we expect any potential incoming peer might know about this transaction ID
+        final XidKey xidKey = new XidKey(gtid, timeTick + lifetime * 1_000_000_000L);
+        putResource(transaction, ENTRY_KEY, entry = new Entry(gtid, transaction, xidKey));
+
         timeoutSet.add(xidKey);
         if (! isStatusInactive(transaction)) {
             try {
